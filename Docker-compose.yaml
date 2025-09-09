@@ -1,4 +1,19 @@
 services:
+  api:
+    build: .
+    container_name: goit-pythonweb-hw-10
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      - database
   database:
     image: postgres
     container_name: postgres_hw6
