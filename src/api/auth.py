@@ -9,3 +9,5 @@ from fastapi import (
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+@router.get("login", response_model=)
