@@ -13,12 +13,9 @@ from sqlalchemy.orm import (
     validates,
 )
 from sqlalchemy.sql.sqltypes import DateTime, Date
+from src.database.models import Base
 
 import re
-
-
-class Base(DeclarativeBase):
-    pass
 
 
 class Contact(Base):

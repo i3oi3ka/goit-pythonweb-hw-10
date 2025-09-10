@@ -1,4 +1,4 @@
-FROM python: 3.13-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -11,6 +11,6 @@ RUN pip install poetry
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --no-dev --no-ansi
+RUN poetry install --no-ansi
 
 COPY . .
