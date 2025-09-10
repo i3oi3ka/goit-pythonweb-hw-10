@@ -24,7 +24,7 @@ class Hash:
         return self.pwd_context.hash(password)
 
 
-async def create_access_token(data: dict, expires_delta: int | None) -> str:
+async def create_access_token(data: dict, expires_delta: int | None = None) -> str:
     to_encode = data.copy()
     if expires_delta is None:
         expires_delta = settings.JWT_EXP_MIN

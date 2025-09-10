@@ -7,8 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database.db import get_db
 from src.schemas.contacts import ContactModel, ContactResponse
 from src.services.contacts import ContactService
+from src.services.auth import get_current_user
 
-router = APIRouter(tags=["Contacts"], prefix="/contacts")
+router = APIRouter(
+    tags=["Contacts"], prefix="/contacts", dependencies=[Depends(get_current_user)]
+)
 
 
 @router.get("/", response_model=List[ContactResponse])
