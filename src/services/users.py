@@ -1,0 +1,25 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.repository.users import UserRepository
+from src.schemas.users import UserCreate
+from src.database.models import User
+
+
+class UserService:
+    def __init__(self, db: AsyncSession):
+        self.user_repository = UserRepository(db)
+
+    async def create_user(self, body: UserCreate) -> User:
+        return await self.user_repository.create_user(body)
+
+    async def get_user_by_id(self, user_id: int) -> User:
+        return await self.user_repository.get_user_by_id(user_id)
+
+    async def get_user_by_username(self, username: str) -> User:
+        return await self.user_repository.get_user_by_username(username)
+
+    async def get_user_by_email(self, email: str) -> User:
+        return await self.user_repository.get_user_by_email(email)
+
+    async def confirmed_email(self, email: str) -> None:
+        await self.user_repository.confirmed_email(email)
