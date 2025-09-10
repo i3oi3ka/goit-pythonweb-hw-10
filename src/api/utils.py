@@ -7,7 +7,7 @@ from src.database.db import get_db
 router = APIRouter(tags=["utils"])
 
 
-@router.get("/healthchecker")
+@router.get("/healthchecker/")
 async def healthchecker(db: AsyncSession = Depends(get_db)):
     try:
         # Виконуємо асинхронний запит

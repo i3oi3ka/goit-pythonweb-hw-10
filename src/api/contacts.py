@@ -8,7 +8,7 @@ from src.database.db import get_db
 from src.schemas.contacts import ContactModel, ContactResponse
 from src.services.contacts import ContactService
 
-router = APIRouter(prefix="/contacts")
+router = APIRouter(tags=["Contacts"], prefix="/contacts")
 
 
 @router.get("/", response_model=List[ContactResponse])

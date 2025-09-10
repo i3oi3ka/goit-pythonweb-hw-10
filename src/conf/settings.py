@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     MAIL_SERVER: str = "smtp.meta.ua"
     MAIL_FROM_NAME: str = "Rest API HW10"
     MAIL_STARTTLS: bool = False
-    MAIL_SSL_TSL: bool = True
+    MAIL_SSL_TLS: bool = True
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
 
