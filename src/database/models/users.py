@@ -15,5 +15,6 @@ class User(Base):
     email: Mapped[EmailStr] = mapped_column(String(100), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
     confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+    avatar: Mapped[bool] = mapped_column(String, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())

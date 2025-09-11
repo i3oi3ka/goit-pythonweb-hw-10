@@ -11,7 +11,7 @@ class User(BaseModel):
     id: int
     email: EmailStr
     username: str
-
+    avatar: str
     model_config = ConfigDict(from_attributes=True)
 
 

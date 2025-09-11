@@ -24,8 +24,8 @@ class UserRepository:
         user = await self.db.execute(stmt)
         return user.scalar_one_or_none()
 
-    async def create_user(self, body: UserCreate) -> User:
-        user = User(**body.model_dump(exclude_unset=True))
+    async def create_user(self, body: UserCreate, avatar: str = None) -> User:
+        user = User(**body.model_dump(exclude_unset=True), avatar=avatar)
         self.db.add(user)
         await self.db.commit()
         await self.db.refresh(user)
