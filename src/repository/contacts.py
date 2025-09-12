@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import select, extract, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import Contact
+from src.database.models import Contact, User
 from src.schemas.contacts import ContactModel
 
 
@@ -12,50 +12,59 @@ class ContactRepository:
     def __init__(self, session: AsyncSession):
         self.db = session
 
-    async def get_contacts(self, skip: int, limit: int, params: dict) -> List[Contact]:
-        stmt = select(Contact).filter_by(**params).offset(skip).limit(limit)
+    async def get_contacts(
+        self, skip: int, limit: int, params: dict, user: User
+    ) -> List[Contact]:
+        stmt = select(Contact).filter_by(**params, user=user).offset(skip).limit(limit)
         contacts = await self.db.execute(stmt)
         return contacts.scalars().all()
 
-    async def get_contact_by_id(self, contact_id: int) -> Contact | None:
-        stmt = select(Contact).filter_by(id=contact_id)
+    async def get_contact_by_id(self, contact_id: int, user: User) -> Contact | None:
+        stmt = select(Contact).filter_by(id=contact_id, user=user)
         contact = await self.db.execute(stmt)
         return contact.scalar_one_or_none()
 
-    async def get_contacts_by_filter(self, query: dict) -> Contact | None:
-        stmt = select(Contact).filter_by(**query)
+    async def get_contacts_by_filter(self, query: dict, user: User) -> Contact | None:
+        stmt = select(Contact).filter_by(**query, user=user)
         contact = await self.db.execute(stmt)
         return contact.scalar_one_or_none()
 
-    async def check_contact_duplicate(self, body: ContactModel) -> bool:
-        stmt = select(Contact).where(
-            (Contact.email == body.email) | (Contact.phone_number == body.phone_number)
+    async def check_contact_duplicate(self, body: ContactModel, user: User) -> bool:
+        stmt = (
+            select(Contact)
+            .filter_by(user=user)
+            .where(
+                (Contact.email == body.email)
+                | (Contact.phone_number == body.phone_number)
+            )
         )
         result = await self.db.execute(stmt)
         existing_contact = result.scalar_one_or_none()
         return existing_contact is not None
 
-    async def create_contact(self, body: ContactModel) -> Contact:
-        if await self.check_contact_duplicate(body):
+    async def create_contact(self, body: ContactModel, user: User) -> Contact:
+        if await self.check_contact_duplicate(body, user):
             raise ValueError("Contact with this email or phone number already exists.")
 
-        contact = Contact(**body.model_dump(exclude_unset=True))
+        contact = Contact(**body.model_dump(exclude_unset=True), user=user)
         self.db.add(contact)
         await self.db.commit()
         await self.db.refresh(contact)
-        return await self.get_contact_by_id(contact.id)
+        return contact
 
-    async def remove_contact(self, contact_id: int) -> Contact | None:
-        contact = await self.get_contact_by_id(contact_id)
+    async def remove_contact(self, contact_id: int, user: User) -> Contact | None:
+        contact = await self.get_contact_by_id(contact_id, user)
         if contact:
             await self.db.delete(contact)
             await self.db.commit()
         return contact
 
-    async def update_contact(self, note_id: int, body: ContactModel) -> Contact | None:
-        contact = await self.get_contact_by_id(note_id)
+    async def update_contact(
+        self, note_id: int, body: ContactModel, user: User
+    ) -> Contact | None:
+        contact = await self.get_contact_by_id(note_id, user)
         if contact:
-            for key, value in body.dict(exclude_unset=True).items():
+            for key, value in body.model_dump(exclude_unset=True).items():
                 setattr(contact, key, value)
 
             await self.db.commit()
@@ -63,15 +72,19 @@ class ContactRepository:
 
         return contact
 
-    async def get_contacts_with_upcoming_birthdays(self) -> List[Contact]:
+    async def get_contacts_with_upcoming_birthdays(self, user: User) -> List[Contact]:
         today = date.today()
         future_date = today + timedelta(days=7)
-        stmt = select(Contact).filter(
-            and_(
-                extract("month", Contact.birthday) >= today.month,
-                extract("day", Contact.birthday) >= today.day,
-                extract("month", Contact.birthday) <= future_date.month,
-                extract("day", Contact.birthday) <= future_date.day,
+        stmt = (
+            select(Contact)
+            .filter_by(user=user)
+            .filter(
+                and_(
+                    extract("month", Contact.birthday) >= today.month,
+                    extract("day", Contact.birthday) >= today.day,
+                    extract("month", Contact.birthday) <= future_date.month,
+                    extract("day", Contact.birthday) <= future_date.day,
+                )
             )
         )
         contacts = await self.db.execute(stmt)
